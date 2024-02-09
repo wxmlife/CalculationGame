@@ -10,7 +10,22 @@ import {
 defineProps({
   // msg: String,
   title: String,
+  first: 0,
+  second: 0,
+  operator: "",
+  formula: [],
 });
+
+// 第一次正式渲染二位数加减法的题目：算式里的各个元素
+// let first = getRandomInt(1, 100);
+// let second = getRandomInt(1, 100);
+// let operator = "";
+// if (randomNumber == 0) {
+//   operator = "+";
+// } else {
+//   operator = "-";
+// }
+// let formula = [first, operator, second, relation_select];
 
 const title = "Calculation Game";
 // let count = 0;
@@ -34,22 +49,11 @@ function getRandomInt(min, max) {
 //加减法随机选择0，
 const randomNumber = Math.floor(Math.random() * 2);
 
-// 第一次正式渲染二位数加减法的题目：算式里的各个元素
-let first = getRandomInt(1, 100);
-let second = getRandomInt(1, 100);
-let operator = "";
-if (randomNumber == 0) {
-  operator = "+";
-} else {
-  operator = "-";
-}
-let formula = [first, operator, second, relation_select];
-
 //封装生成二位数加减法新题目的函数
 function generateNewQuestion() {
   // 算式里的各个元素
-  first = getRandomInt(1, 100);
-  second = getRandomInt(1, 100);
+  let first = getRandomInt(1, 100);
+  let second = getRandomInt(1, 100);
   operator = "";
   if (randomNumber == 0) {
     operator = "+";
@@ -86,12 +90,16 @@ generateAmutiBNewQuestions();
 //处理next question的函数
 function nextQuestion() {
   // if (AopB == 1) {
-  generateAmutiBNewQuestions();
-  // generateNewQuestion();
+  // generateAmutiBNewQuestions();
+  generateNewQuestion();
   //生成新的题目
   // } else if (AmutiB == 1) {
   //   console.log("generateAmutiBNewQuestion()"); //
   // }
+}
+
+function changeAmutiBNewQuestions() {
+  generateAmutiBNewQuestions();
 }
 
 //判断功能
@@ -147,7 +155,8 @@ function judgeAnswer(inputValue) {
       <button @click="judgeAnswer(inputValue)">Submit</button>
       <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
       <button @click="nextQuestion">next question</button>
-      <button @click="generateAmutiBNewQuestion">test</button>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
+      <button @click="generateAmutiBNewQuestions">test</button>
     </div>
   </div>
   <div style="display: flex; justify-content: center; align-items: center">
