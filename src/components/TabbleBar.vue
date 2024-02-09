@@ -1,5 +1,5 @@
 <script setup>
-import generateAmutiBNewQuestion from "../function/caculate.js";
+// import generateAmutiBNewQuestion from "../function/caculate.js";
 cc = 0;
 function test() {
   cc = 1;

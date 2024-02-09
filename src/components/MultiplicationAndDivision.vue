@@ -21,8 +21,8 @@ judger.value = 0;
 let ComputerResult = 0;
 let score = 0;
 
-let AaddB= 0;
-let AmutiB= 0;
+let AaddB = 0;
+let AmutiB = 0;
 
 // 生成随机整数的函数
 function getRandomInt(min, max) {
@@ -64,10 +64,11 @@ generateNewQuestion();
 
 //处理next question的函数
 function nextQuestion() {
-  if(AaddB==1){
+  // if (AopB == 1) {
   generateNewQuestion(); //生成新的题目
-}else if(AmutiB==1){
-  console.log("generateAmutiBNewQuestion()"); //
+  // } else if (AmutiB == 1) {
+  //   console.log("generateAmutiBNewQuestion()"); //
+  // }
 }
 
 //判断功能
@@ -121,6 +122,7 @@ function judgeAnswer(inputValue) {
       />
       <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
       <button @click="judgeAnswer(inputValue)">Submit</button>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
       <button @click="nextQuestion">next question</button>
     </div>
   </div>
