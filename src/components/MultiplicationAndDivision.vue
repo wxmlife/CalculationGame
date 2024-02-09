@@ -1,6 +1,9 @@
 <script setup>
 import { ref, watch } from "vue";
-// import "../functions/caculateFourOperations.js";
+import {
+  test,
+  generateAmutiBNewQuestion,
+} from "../function/caculateFourOperations.js";
 // import TabbleBar from "./TabbleBar.vue";
 
 // data区
@@ -60,12 +63,32 @@ function generateNewQuestion() {
   judger.value = 0;
 }
 
+function generateAmutiBNewQuestions() {
+  // 算式里的各个元素
+  first = getRandomInt(1, 100);
+  second = getRandomInt(1, 100);
+  operator = "";
+  if (randomNumber == 0) {
+    operator = "X";
+  } else {
+    operator = "%";
+  }
+  formula = [first, operator, second, relation_select];
+  // 清空输入框
+  inputValue = "";
+  // 重置评判结果
+  judger.value = 0;
+}
+
 generateNewQuestion();
+generateAmutiBNewQuestions();
 
 //处理next question的函数
 function nextQuestion() {
   // if (AopB == 1) {
-  generateNewQuestion(); //生成新的题目
+  generateAmutiBNewQuestions();
+  // generateNewQuestion();
+  //生成新的题目
   // } else if (AmutiB == 1) {
   //   console.log("generateAmutiBNewQuestion()"); //
   // }
@@ -124,6 +147,7 @@ function judgeAnswer(inputValue) {
       <button @click="judgeAnswer(inputValue)">Submit</button>
       <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
       <button @click="nextQuestion">next question</button>
+      <button @click="generateAmutiBNewQuestion">test</button>
     </div>
   </div>
   <div style="display: flex; justify-content: center; align-items: center">

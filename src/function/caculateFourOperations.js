@@ -1,4 +1,5 @@
 // let judge = false;
+import { ref, watch } from "vue";
 let relation_select = "=";
 let inputValue = ref();
 let judger = ref();
@@ -23,7 +24,7 @@ if (randomNumber == 0) {
 let formula = [first, operator, second, relation_select];
 
 //封装生成二位数加减法新题目的函数
-function generateNewQuestion() {
+export function generateNewQuestion() {
   // 算式里的各个元素
   first = getRandomInt(1, 100);
   second = getRandomInt(1, 100);
@@ -41,7 +42,8 @@ function generateNewQuestion() {
 }
 
 //封装生成二位数乘除法新题目的函数
-function generateAmutiBNewQuestion() {
+export function generateAmutiBNewQuestion() {
+  console.log("Generating");
   // 算式里的各个元素
   first = getRandomInt(1, 100);
   second = getRandomInt(1, 100);
@@ -56,4 +58,8 @@ function generateAmutiBNewQuestion() {
   inputValue = "";
   // 重置评判结果
   judger.value = 0;
+}
+
+export function test() {
+  console.log("hello world!");
 }
