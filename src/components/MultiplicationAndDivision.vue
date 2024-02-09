@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from "vue";
+// import "../functions/caculateFourOperations.js";
 // import TabbleBar from "./TabbleBar.vue";
 
 // data区
@@ -9,9 +10,9 @@ defineProps({
 });
 
 const title = "Calculation Game";
-let count = 0;
-let Ru = false;
-let Process = false;
+// let count = 0;
+// let Ru = false;
+// let Process = false;
 // let judge = false;
 let relation_select = "=";
 let inputValue = ref();
@@ -20,7 +21,8 @@ judger.value = 0;
 let ComputerResult = 0;
 let score = 0;
 
-let AaddB= 1
+let AaddB= 0;
+let AmutiB= 0;
 
 // 生成随机整数的函数
 function getRandomInt(min, max) {
@@ -65,7 +67,7 @@ function nextQuestion() {
   if(AaddB==1){
   generateNewQuestion(); //生成新的题目
 }else if(AmutiB==1){
-  generateAmutiBNewQuestion(); //
+  console.log("generateAmutiBNewQuestion()"); //
 }
 
 //判断功能
@@ -97,7 +99,6 @@ function judgeAnswer(inputValue) {
 </script>
 
 <template>
-  <!-- <TabbleBar /> -->
   <!-- 正式题目 -->
   <h1>{{ title }}</h1>
   <div style="display: flex; justify-content: center; align-items: center">
@@ -120,8 +121,6 @@ function judgeAnswer(inputValue) {
       />
       <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
       <button @click="judgeAnswer(inputValue)">Submit</button>
-      <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
-      <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
       <button @click="nextQuestion">next question</button>
     </div>
   </div>

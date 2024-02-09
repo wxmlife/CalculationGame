@@ -1,5 +1,7 @@
 <script setup>
-import HelloWorld from "./components/HelloWorld.vue";
+// import Home from "./components/Home.vue";
+import MultiplicationAndDivision from "./components/MultiplicationAndDivision.vue";
+import test from "./components/test.vue";
 </script>
 
 <template>
@@ -11,7 +13,9 @@ import HelloWorld from "./components/HelloWorld.vue";
       <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div> -->
-  <HelloWorld />
+  <!-- <Home /> -->
+  <MultiplicationAndDivision />
+  <test />
 </template>
 
 <style scoped></style>
