@@ -20,7 +20,7 @@ function loadModule(type) {
 <template>
   <TabbleBar @module-selected="loadModule" />
   <div style="display: flex; justify-content: center; align-items: center">
-    <h1>Calculation Game</h1>
+    <h1>Calculation Game!</h1>
   </div>
   <component :is="currentModule" />
 </template>
