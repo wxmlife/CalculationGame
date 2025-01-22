@@ -1,8 +1,12 @@
 <script setup>
+import AaddB from "./AaddB.vue";
+import AmultB from "./AmultB.vue";
+
 // import generateAmutiBNewQuestion from "../function/caculate.js";
-cc = 0;
-function test() {
-  cc = 1;
+import { defineEmits } from "vue";
+const emit = defineEmits();
+function selectModule(type) {
+  emit("module-selected", type); //触发事件并传递模块类型
 }
 </script>
 <template>
@@ -18,8 +22,8 @@ function test() {
     <li class="father">
       function
       <ul class="son">
-        <li>A+B</li>
-        <li @click="test()">A*B</li>
+        <li @click="selectModule('AaddB')">A+B</li>
+        <li @click="selectModule('AmultB')">A*B</li>
       </ul>
     </li>
     &nbsp;&nbsp;&nbsp;&nbsp;
@@ -33,7 +37,6 @@ function test() {
       <ul class="son"></ul>
     </li>
   </div>
-  <div v-show="(cc = 1)">{{ cc }}</div>
 </template>
 <style scoped>
 /* 手搓导航条 */
