@@ -1,14 +1,6 @@
 <script setup>
 import { ref } from "vue";
 
-// data区
-const props = defineProps({
-  title: {
-    type: String,
-    default: "Calculation Game",
-  },
-});
-
 // 第一次正式渲染
 // 二位数加减法的题目：算式里的各个元素
 let first = ref(getRandomInt(1, 100));
@@ -19,9 +11,9 @@ let inputValue = ref("");
 let judger = ref({ value: 0 });
 let ComputerResult = ref(0);
 let score = ref(0);
-
-let AaddB = 0;
-let AmutiB = 0;
+// let CongratulationsMessageAlert = ref(CongratulationsMessageAlert());
+const showCongratulations = ref({ value: false }); // 控制弹窗的显示
+const CongratulationsMessage = ref("");
 
 // 生成随机整数的函数
 function getRandomInt(min, max) {
@@ -37,17 +29,56 @@ if (randomNumber === 0) {
 
 //封装生成二位数加减法新题目的函数
 function generateNewQuestion() {
-  first.value = getRandomInt(1, 100);
-  second.value = getRandomInt(1, 100);
-  operator.value = Math.random() < 0.5 ? "+" : "-";
-  formula.value = [first.value, operator.value, second.value, "="];
-  // 清空输入框
+  if (score.value < 1) {
+    first.value = getRandomInt(1, 100);
+    second.value = getRandomInt(1, 100);
+    operator.value = Math.random() < 0.5 ? "+" : "-";
+    formula.value = [first.value, operator.value, second.value, "="];
+  }
+  // 第二等级：算法进阶，从二位进阶到三位
+  if (score.value >= 1) {
+    first.value = getRandomInt(100, 999);
+    second.value = getRandomInt(100, 999);
+    operator.value = Math.random() < 0.5 ? "+" : "-";
+    formula.value = [first.value, operator.value, second.value, "="];
+    inputValue = "";
+    judger.value = 0;
+  }
+  // 第三等级：四位数算法
+  if (score.value >= 2) {
+    first.value = getRandomInt(1000, 9999);
+    second.value = getRandomInt(1000, 9999);
+    operator.value = Math.random() < 0.5 ? "+" : "-";
+    formula.value = [first.value, operator.value, second.value, "="];
+    inputValue = "";
+    judger.value = 0;
+  }
   inputValue = "";
   // 重置评判结果
   judger.value = 0;
 }
 
-// 答案判断
+// 进阶祝贺消息函数
+function CongratulationsMessageAlert() {
+  if (score.value == 1) {
+    showCongratulations.value = { value: true }; // 显示祝贺弹窗
+    CongratulationsMessage.value = "恭喜你掌握两位数的加减法";
+
+    setTimeout(() => {
+      showCongratulations.value = { value: false }; // 关闭弹窗
+    }, 10000);
+  }
+  if (score.value == 2) {
+    showCongratulations.value = { value: true }; // 显示祝贺弹窗
+    CongratulationsMessage.value = "恭喜你掌握三位数的加减法";
+
+    setTimeout(() => {
+      showCongratulations.value = { value: false }; // 关闭弹窗
+    }, 2000);
+  }
+}
+
+// 答案判断+进阶判断
 function judgeAnswer(input) {
   const result = eval(
     `${formula.value[0]} ${formula.value[1]} ${formula.value[2]}`
@@ -59,6 +90,9 @@ function judgeAnswer(input) {
     score.value += 1;
     // Play right audio
     new Audio("../src/assets/right.mp3").play();
+    // 进阶祝贺判断
+    CongratulationsMessageAlert();
+    // 1秒后跳转到下一题
     setTimeout(nextQuestion, 1000);
   } else if (input !== "") {
     judger.value = { value: 2 };
@@ -77,18 +111,35 @@ function nextQuestion() {
 
 // Initialize the first question
 generateNewQuestion();
+
+// 关闭弹窗
+function closeModal() {
+  showCongratulations.value = { value: false }; // 关闭弹窗
+}
 </script>
 
 <template>
   <!-- 正式题目 -->
-  <div class="context">
+  <div class="body">
+    <!-- 分数展示区 -->
     <div style="display: flex; justify-content: center; align-items: center">
       <img style="width: 20px; height: 20px" src="../assets/img/star.png" />
       <h2>&nbsp;&nbsp;Your score is : {{ score }}</h2>
     </div>
 
-    <!-- 加减法的题目与对错判断 -->
+    <!-- 答题算式进阶弹窗提示 -->
+    <div v-if="showCongratulations.value == true" class="modal">
+      <div class="modal-content">
+        <img style="width: 20px; height: 20px" src="../assets/img/star.png" />
+        <span class="close" @click="closeModal">&times;</span>
+        <p>{{ CongratulationsMessage }}</p>
+        <p>接下来准备好挑战更难一点儿的题目了吗？</p>
+      </div>
+    </div>
+
+    <!-- 加减法的题目渲染与对错判断 -->
     <div class="box-container">
+      <!-- 题目渲染 -->
       <div v-for="(item, index) in formula" :key="index" class="box">
         {{ item }}
       </div>
@@ -100,13 +151,16 @@ generateNewQuestion();
         placeholder="..."
       />
     </div>
+
+    <!-- 辅助功能按钮：提交、下一题 -->
     <div class="box-line">
       <button @click="judgeAnswer(inputValue)">Submit</button>
       <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
       <button @click="nextQuestion">next question</button>
       <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
-      <button @click="generateAmutiBNewQuestions">test</button>
     </div>
+
+    <!-- 判定结果反馈 -->
     <div style="display: flex; justify-content: center; align-items: center">
       <img
         style="width: 20px; height: 20px"
@@ -125,11 +179,10 @@ generateNewQuestion();
       </div>
     </div>
   </div>
-  <!-- 乘除法的题目与对错判断 -->
 </template>
 
 <style scoped>
-.context {
+.body {
   display: block;
   justify-content: space-around;
 }
@@ -155,5 +208,41 @@ generateNewQuestion();
   align-items: center;
   justify-content: center;
   font-size: 18px;
+}
+.modal {
+  display: flex;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #fefefe;
+  padding: 20px;
+  border: 1px solid #888;
+  border-radius: 5px;
+  width: auto;
+  text-align: center;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
 </style>

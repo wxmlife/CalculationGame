@@ -20,9 +20,6 @@ let judger = ref({ value: 0 });
 let ComputerResult = ref(0);
 let score = ref(0);
 
-let AaddB = 0;
-let AmutiB = 0;
-
 // 生成随机整数的函数
 function getRandomInt(min, max) {
   return min + Math.floor(Math.random() * (max - min + 1));
@@ -32,15 +29,36 @@ const randomNumber = Math.floor(Math.random() * 2);
 if (randomNumber === 0) {
   operator.value = "*";
 } else {
-  operator.value = "//";
+  operator.value = "/";
 }
 
-//封装生成二位数加减法新题目的函数
+//封装生成加减法新题目的函数
 function generateNewQuestion() {
-  first.value = getRandomInt(1, 100);
-  second.value = getRandomInt(1, 100);
-  operator.value = Math.random() < 0.5 ? "*" : "//";
-  formula.value = [first.value, operator.value, second.value, "="];
+  // 第一等级，从二位进阶到三位
+  if (score.value < 1) {
+    first.value = getRandomInt(100, 999);
+    second.value = getRandomInt(1, 100);
+    operator.value = Math.random() < 0.5 ? "*" : "/";
+    formula.value = [first.value, operator.value, second.value, "="];
+  }
+  // 第二等级：算法进阶，从二位进阶到三位
+  if (score.value >= 1) {
+    first.value = getRandomInt(100, 999);
+    second.value = getRandomInt(100, 999);
+    operator.value = Math.random() < 0.5 ? "*" : "/";
+    formula.value = [first.value, operator.value, second.value, "="];
+    inputValue = "";
+    judger.value = 0;
+  }
+  // 第三等级：四位数算法
+  if (score.value >= 2) {
+    first.value = getRandomInt(1000, 9999);
+    second.value = getRandomInt(1000, 9999);
+    operator.value = Math.random() < 0.5 ? "*" : "/";
+    formula.value = [first.value, operator.value, second.value, "="];
+    inputValue = "";
+    judger.value = 0;
+  }
   // 清空输入框
   inputValue = "";
   // 重置评判结果
