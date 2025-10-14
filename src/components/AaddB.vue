@@ -123,15 +123,15 @@ function closeModal() {
 </script>
 
 <template>
-  <!-- 正式题目 -->
-  <div class="body">
-    <!-- 分数展示区 -->
-    <div style="display: flex; justify-content: center; align-items: center">
-      <img style="width: 20px; height: 20px" src="../assets/img/star.png" />
-      <h2>&nbsp;&nbsp;Your score is : {{ score }}</h2>
+  <!-- 最外层：上下居中 + 轻微渐变背景 -->
+  <div class="game-wrap">
+    <!-- 1. 分数 -->
+    <div class="score">
+      <img class="score img" src="../assets/img/star.png" />
+      <h2>Your score is : {{ score }}</h2>
     </div>
 
-    <!-- 答题算式进阶弹窗提示 -->
+    <!-- 5.弹窗：答题算式进阶弹窗提示 -->
     <div v-if="showCongratulations.value == true" class="modal">
       <div class="modal-content">
         <img style="width: 20px; height: 20px" src="../assets/img/star.png" />
@@ -141,78 +141,181 @@ function closeModal() {
       </div>
     </div>
 
-    <!-- 加减法的题目渲染与对错判断 -->
-    <div class="box-container">
-      <!-- 题目渲染 -->
-      <div v-for="(item, index) in formula" :key="index" class="box">
-        {{ item }}
+    <!-- 2. 题目呈现：像一张卡片 -->
+    <section class="question-box">
+      <div class="formula">
+        <span class="num">{{ first }}</span>
+        <span class="op">{{ operator }}</span>
+        <span class="num">{{ second }}</span>
+        <span class="eq">=</span>
+        &nbsp;
       </div>
       <input
-        class="box"
-        type="text"
         v-model="inputValue"
         @keyup.enter="judgeAnswer(inputValue)"
-        placeholder="..."
+        class="answer-input"
+        placeholder=" ? "
       />
-    </div>
+    </section>
 
-    <!-- 辅助功能按钮：提交、下一题 -->
-    <div class="box-line">
-      <button @click="judgeAnswer(inputValue)">Submit</button>
-      <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
-      <button @click="nextQuestion">next question</button>
-      <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
-    </div>
+    <!-- 3. 按钮 -->
+    <section class="ctrl-bar">
+      <button class="btn" @click="judgeAnswer(inputValue)">提交</button>
+      &nbsp;&nbsp;
+      <button class="btn" @click="nextQuestion">下一题</button>
+    </section>
 
-    <!-- 判定结果反馈 -->
-    <div style="display: flex; justify-content: center; align-items: center">
-      <img
-        style="width: 20px; height: 20px"
-        v-show="judger.value === 1"
-        src="../assets/img/right.png"
-      />
-      <img
-        style="width: 20px; height: 20px"
-        v-show="judger.value === 2"
-        src="../assets/img/wrong.png"
-      />
-      &nbsp;&nbsp;&nbsp;&nbsp;
-      <div v-show="judger.value === 1">Your are right, good job!</div>
-      <div v-show="judger.value === 2">
-        the answer should be {{ ComputerResult }}
+    <!-- 4. 反馈 -->
+    <transition name="fade">
+      <div v-if="judger.value" class="feedback">
+        <img v-if="judger.value === 1" src="../assets/img/right.png" />
+        <img v-else src="../assets/img/wrong.png" />
+        <span v-if="judger.value === 1">答对了！继续加油~</span>
+        <span v-else>正确答案：{{ ComputerResult }}</span>
       </div>
-    </div>
+    </transition>
   </div>
 </template>
 
 <style scoped>
-.body {
-  display: block;
-  justify-content: space-around;
+/* ------ CSS 变量，改这里就能换主题 ------ */
+:root {
+  /* 连续变化字号：最小值, 首选值, 最大值 */
+  --fs-score: clamp(0.9rem, 1.2vw, 1.1rem);
+  --fs-formula: clamp(1.5rem, 4vw, 2.2rem);
+  --fs-input: clamp(1.2rem, 3vw, 1.8rem);
+  --fs-btn: clamp(0.8rem, 2vw, 1rem);
+
+  /* 卡片宽度：手机几乎满屏，桌面最大 480px */
+  --card-w: min(92vw, 480px);
+  /* 按钮高度：手机 32px → 电脑 40px */
+  --btn-h: clamp(28px, 6vw, 36px);
+
+  /* 圆角 & 阴影 也随屏宽变化 */
+  --radius: clamp(4px, 1vw, 8px);
+  --shadow: 0 2px clamp(4px, 1vw, 12px) rgba(0, 0, 0, 0.08);
+
+  /* 颜色保持刚才的“普通风” */
+  --bg: #f3f5f7;
+  --card: #ffffff;
+  --text: #333333;
+  --text-light: #666666;
+  --border: #e0e0e0;
 }
-.box-line {
+
+/* 整体卡片 */
+.game-wrap {
+  width: var(--card-w);
+  margin: 2rem auto;
+  background: var(--bg);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--text);
+  text-align: center;
+  padding: clamp(1rem, 3vw, 2rem);
+  border-radius: var(--radius);
+}
+
+/* 1. 分数栏 */
+.score {
   display: flex;
-  align-items: center;
-  justify-content: space-around;
-  margin: 10%;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: var(--fs-score);
+  margin-bottom: clamp(1rem, 3vw, 2rem);
 }
-.box-container {
+.score img {
+  width: clamp(16px, 2vw, 40px);
+  height: clamp(16px, 2vw, 40px);
+}
+
+/* 2. 题目卡片 */
+.question-box {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+.formula {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 32px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+.formula .num {
+  min-width: 60px;
+}
+.formula .op {
+  color: var(--primary);
+}
+.formula .eq {
+  margin: 0 4px;
+}
+
+/* 输入框 */
+.answer-input {
+  width: 120px;
+  height: 48px;
+  font-size: 28px;
+  text-align: center;
+  border: 2px solid #dcdfe6;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.answer-input:focus {
+  border-color: var(--primary);
+}
+
+/* 3. 按钮栏 */
+.ctrl-bar {
   display: flex;
-  align-items: center;
-  justify-content: space-around;
-  margin: 10%;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
 }
-.box {
-  /* background-color: #beefc2; */
-  box-sizing: border-box;
-  height: 50px;
-  border: 1px solid #13181b;
-  padding: 10%;
+.btn {
+  height: var(--btn-h);
+  line-height: var(--btn-h);
+  padding: 10px 24px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #000;
+  background: #fff;
+  color: #000;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn:hover {
+  background: #fff8f0;
+  border-color: #000;
+}
+
+/* 4. 反馈 */
+.feedback {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  gap: 8px;
+  font-size: 16px;
+  min-height: 24px;
 }
+.feedback img {
+  width: 24px;
+  height: 24px;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 .modal {
   display: flex;
   position: fixed;

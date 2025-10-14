@@ -5,7 +5,7 @@ import AaddB from "./components/AaddB.vue";
 import AmultB from "./components/AmultB.vue";
 import Home from "./components/Home.vue";
 import { ref } from "vue";
-const currentModule = ref(null); // 当前加载的模块
+const currentModule = ref(Home); // 当前加载的模块
 
 function loadModule(type) {
   if (type === "AaddB") {
@@ -22,7 +22,6 @@ function loadModule(type) {
 
 <template>
   <TabbleBar @module-selected="loadModule" />
-
   <component :is="currentModule" />
 </template>
 

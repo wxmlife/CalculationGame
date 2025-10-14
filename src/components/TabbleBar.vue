@@ -1,4 +1,5 @@
 <script setup>
+import { ref, onMounted, onUnmounted } from "vue";
 import Home from "./Home.vue";
 import AaddB from "./AaddB.vue";
 import AmultB from "./AmultB.vue";
@@ -6,35 +7,64 @@ import AmultB from "./AmultB.vue";
 // import generateAmutiBNewQuestion from "../function/caculate.js";
 import { defineEmits } from "vue";
 const emit = defineEmits();
+
+const activeDrop = ref(""); // 当前展开的父项名字
 function selectModule(type) {
   emit("module-selected", type); //触发事件并传递模块类型
 }
+function toggleDrop(name) {
+  // 点击同一项就关闭，否则打开新项
+  activeDrop.value = activeDrop.value === name ? "" : name;
+}
+
+function clickOutside(e) {
+  // 点在非导航区域就关闭所有下拉
+  if (!e.target.closest(".nav")) activeDrop.value = "";
+}
+
+// 挂载全局监听
+onMounted(() => document.addEventListener("click", clickOutside));
+onUnmounted(() => document.removeEventListener("click", clickOutside));
 </script>
+
 <template>
-  <div class="nav">
-    <li class="father" @click="selectModule('Home')">Home</li>
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    <li class="father">
-      function
+  <nav class="nav" @click.stop>
+    <li class="father" @click="$emit('module-selected', 'Home')">Home</li>
+
+    <li
+      class="father"
+      @click="toggleDrop('func')"
+      :class="{ open: activeDrop === 'func' }"
+    >
+      Function
       <ul class="son">
-        <li @click="selectModule('AaddB')">A+B</li>
-        <li @click="selectModule('AmultB')">A*B</li>
+        <li @click="$emit('module-selected', 'AaddB')">A+B</li>
+        <li @click="$emit('module-selected', 'AmultB')">A*B</li>
       </ul>
     </li>
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    <li class="father">
+
+    <li
+      class="father"
+      @click="toggleDrop('learn')"
+      :class="{ open: activeDrop === 'learn' }"
+    >
       Learn more
       <ul class="son"></ul>
     </li>
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    <li class="father">
+
+    <li
+      class="father"
+      @click="toggleDrop('contact')"
+      :class="{ open: activeDrop === 'contact' }"
+    >
       Contact us
       <ul class="son"></ul>
     </li>
-  </div>
+  </nav>
 </template>
+
 <style scoped>
-/* 手搓导航条 */
+/* ========= 基础导航 ========= */
 .nav {
   display: flex;
   justify-content: center;
@@ -43,45 +73,84 @@ function selectModule(type) {
   top: 0;
   left: 0;
   width: 100%;
-  background-color: rgb(255, 248, 240);
-  /* height: 6%; */
-  z-index: 3;
-  /*border-bottom: 1px solid #13181b; */
+  background: #fff8f0;
+  z-index: 10;
+  user-select: none;
 }
+
 .father {
-  background-color: rgb(255, 248, 240);
   list-style: none;
-  display: inline-flex;
-  font-weight: bolder;
   position: relative;
-  padding: 1%;
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
 }
-.father:hover {
-  background-color: rgba(250, 245, 238, 0.548);
-}
-.son {
-  width: 100%;
-  background-color: rgba(250, 245, 238, 0.548);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  padding: 20%;
+.father::after {
+  content: "";
   position: absolute;
-  top: 38px;
-  left: 0px;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px; /* 2px 足够贴住，又几乎看不见 */
+  background: transparent;
 }
+
+/* ========= 下拉列表 ========= */
+.son {
+  position: absolute;
+  left: 0;
+  top: 100%; /* 紧贴父项底部，无缝隙 */
+  margin-top: -2px; /* 向上贴 2px 彻底消除可见缝隙 */
+  text-align: left;
+  min-width: 100%;
+  background: #faf5ee;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+
+  /* 默认隐藏 */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.25s, visibility 0.25s, transform 0.25s;
+}
+
 .son li {
   list-style: none;
-  padding: 1%;
+  padding: 0.5rem 0.8rem;
+  white-space: nowrap;
 }
 .son li:hover {
   color: orange;
 }
 
-.father:hover .son {
-  display: block;
+/* ========= 有鼠标设备：hover 展开 ========= */
+@media (hover: hover) {
+  .father:hover .son,
+  .father.open .son {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
 }
-.father:click .son {
-  display: block;
+
+/* ========= 无鼠标设备：只有点击才展开 ========= */
+@media (hover: none) {
+  .father.open .son {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+/* ========= 小屏适配 ========= */
+@media (max-width: 600px) {
+  .nav {
+    font-size: 0.9rem;
+    padding: 0 0.5rem;
+  }
+  .father {
+    padding: 0.5rem 0.6rem;
+  }
 }
 </style>

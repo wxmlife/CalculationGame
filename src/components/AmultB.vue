@@ -1,176 +1,342 @@
 <script setup>
 import { ref } from "vue";
+import rightMp3 from "../assets/right.mp3?url";
+import wrongMp3 from "../assets/wrong.mp3?url";
 
-// data区
-const props = defineProps({
-  title: {
-    type: String,
-    default: "Calculation Game",
-  },
-});
+/* ========= 1. 基础状态 ========= */
+const first = ref(0);
+const second = ref(0);
+const operator = ref("");
+const formula = ref([]);
+const inputValue = ref("");
+const judger = ref({ value: 0 });
+const ComputerResult = ref(0);
+const score = ref(0);
+const showCongratulations = ref({ value: false });
+const CongratulationsMessage = ref("");
 
-// 第一次正式渲染
-// 二位数加减法的题目：算式里的各个元素
-let first = ref(getRandomInt(1, 100));
-let second = ref(getRandomInt(1, 100));
-let operator = ref("");
-let formula = ref([]);
-let inputValue = ref("");
-let judger = ref({ value: 0 });
-let ComputerResult = ref(0);
-let score = ref(0);
+/* ========= 2. 模式：加减 | 乘除 ========= */
+const mode = ref("addSub"); // addSub  or  multDiv
+const emit = defineEmits(["module-selected"]); // 如果你想对外通信
 
-// 生成随机整数的函数
+/* ========= 3. 工具函数 ========= */
 function getRandomInt(min, max) {
-  return min + Math.floor(Math.random() * (max - min + 1));
-}
-//加减法随机选择0，
-const randomNumber = Math.floor(Math.random() * 2);
-if (randomNumber === 0) {
-  operator.value = "*";
-} else {
-  operator.value = "/";
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-//封装生成加减法新题目的函数
+/* ========= 4. 生成新题 ========= */
 function generateNewQuestion() {
-  // 第一等级，从二位进阶到三位
-  if (score.value < 1) {
-    first.value = getRandomInt(100, 999);
-    second.value = getRandomInt(1, 100);
+  /* 等级边界 */
+  const lvl = score.value < 5 ? 1 : score.value < 10 ? 2 : 3;
+  const max = [0, 99, 999, 9999][lvl]; // 对应两位数/三位数/四位数
+
+  if (mode.value === "addSub") {
+    /* 加减法：完全原逻辑 */
+    first.value = getRandomInt(1, max);
+    second.value = getRandomInt(1, max);
     operator.value = Math.random() < 0.5 ? "*" : "/";
-    formula.value = [first.value, operator.value, second.value, "="];
+  } else {
+    /* 乘除法：先随机运算符，再保证除法能整除 */
+    const opPool = ["*", "/"];
+    operator.value = opPool[Math.floor(Math.random() * 2)];
+
+    if (operator.value === "*") {
+      first.value = getRandomInt(2, Math.min(9, lvl * 3)); // 小乘数
+      second.value = getRandomInt(2, Math.min(9, lvl * 3)); // 小乘数
+    } else {
+      /* 除法：先随机「除数」和「商」，再反推被除数 → 一定除尽 */
+      const divisor = getRandomInt(2, Math.min(9, lvl * 3));
+      const quotient = getRandomInt(2, Math.min(99, lvl * 33));
+      second.value = divisor;
+      first.value = divisor * quotient; // 被除数
+    }
   }
-  // 第二等级：算法进阶，从二位进阶到三位
-  if (score.value >= 1) {
-    first.value = getRandomInt(100, 999);
-    second.value = getRandomInt(100, 999);
-    operator.value = Math.random() < 0.5 ? "*" : "/";
-    formula.value = [first.value, operator.value, second.value, "="];
-    inputValue = "";
-    judger.value = 0;
-  }
-  // 第三等级：四位数算法
-  if (score.value >= 2) {
-    first.value = getRandomInt(1000, 9999);
-    second.value = getRandomInt(1000, 9999);
-    operator.value = Math.random() < 0.5 ? "*" : "/";
-    formula.value = [first.value, operator.value, second.value, "="];
-    inputValue = "";
-    judger.value = 0;
-  }
-  // 清空输入框
-  inputValue = "";
-  // 重置评判结果
-  judger.value = 0;
+  formula.value = [first.value, operator.value, second.value, "="];
+  inputValue.value = "";
+  judger.value = { value: 0 };
 }
 
-// 答案判断
-function judgeAnswer(input) {
-  const result = eval(
-    `${formula.value[0]} ${formula.value[1]} ${formula.value[2]}`
-  );
-  ComputerResult.value = result;
+/* ========= 5. 答案判断（支持小数 & 误差） ========= */
+function judgeAnswer(raw) {
+  const ans = Number(raw);
+  const res =
+    operator.value === "*"
+      ? first.value * second.value
+      : operator.value === "/"
+      ? first.value / second.value
+      : first.value / second.value; // 除法已保证整除
 
-  if (input == result) {
+  ComputerResult.value = res;
+
+  if (Math.abs(ans - res) < 0.01) {
+    // 容忍 0.01 误差
     judger.value = { value: 1 };
     score.value += 1;
-    // Play right audio
-    new Audio("../src/assets/right.mp3").play();
-    setTimeout(nextQuestion, 1000);
-  } else if (input !== "") {
+    new Audio(rightMp3).play();
+    if (score.value === 5 || score.value === 10 || score.value === 15) {
+      CongratulationsMessageAlert();
+      setTimeout(nextQuestion, 1000);
+    }
+  } else if (raw !== "") {
     judger.value = { value: 2 };
-    // Play wrong audio
-    new Audio("../src/assets/wrong.mp3").play();
+    score.value -= 1;
+    new Audio(wrongMp3).play();
   } else {
     judger.value = { value: 0 };
   }
 }
 
-// Function to get the next question
+/* ========= 6. 弹窗 & 下一题（原逻辑） ========= */
+function CongratulationsMessageAlert() {
+  const stage =
+    score.value === 5 ? "两位数" : score.value === 10 ? "三位数" : "四位数";
+  const opName = mode.value === "addSub" ? "加减法" : "乘除法";
+  showCongratulations.value = { value: true };
+  CongratulationsMessage.value = `恭喜你掌握${stage}${opName}！`;
+  setTimeout(() => (showCongratulations.value = { value: false }), 2000);
+}
+
 function nextQuestion() {
   generateNewQuestion();
 }
 
-// Initialize the first question
+function closeModal() {
+  showCongratulations.value = { value: false };
+}
+
+/* ========= 7. 初始化 ========= */
 generateNewQuestion();
 </script>
 
 <template>
-  <!-- 正式题目 -->
-  <div class="context">
-    <div style="display: flex; justify-content: center; align-items: center">
-      <img style="width: 20px; height: 20px" src="../assets/img/star.png" />
-      <h2>&nbsp;&nbsp;Your score is : {{ score }}</h2>
+  <!-- 最外层：上下居中 + 轻微渐变背景 -->
+  <div class="game-wrap">
+    <!-- 1. 分数 -->
+    <div class="score">
+      <img class="score img" src="../assets/img/star.png" />
+      <h2>Your score is : {{ score }}</h2>
     </div>
 
-    <!-- 加减法的题目与对错判断 -->
-    <div class="box-container">
-      <div v-for="(item, index) in formula" :key="index" class="box">
-        {{ item }}
+    <!-- 5.弹窗：答题算式进阶弹窗提示 -->
+    <div v-if="showCongratulations.value == true" class="modal">
+      <div class="modal-content">
+        <img style="width: 20px; height: 20px" src="../assets/img/star.png" />
+        <span class="close" @click="closeModal">&times;</span>
+        <p>{{ CongratulationsMessage }}</p>
+        <p>接下来准备好挑战更难一点儿的题目了吗？</p>
+      </div>
+    </div>
+
+    <!-- 2. 题目呈现：像一张卡片 -->
+    <section class="question-box">
+      <div class="formula">
+        <span class="num">{{ first }}</span>
+        <span class="op">{{ operator }}</span>
+        <span class="num">{{ second }}</span>
+        <span class="eq">=</span>
+        &nbsp;
       </div>
       <input
-        class="box"
-        type="text"
         v-model="inputValue"
         @keyup.enter="judgeAnswer(inputValue)"
-        placeholder="..."
+        class="answer-input"
+        placeholder=" ? "
       />
-    </div>
-    <div class="box-line">
-      <button @click="judgeAnswer(inputValue)">Submit</button>
-      <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
-      <button @click="nextQuestion">next question</button>
-      <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
-      <button @click="generateAmutiBNewQuestions">test</button>
-    </div>
-    <div style="display: flex; justify-content: center; align-items: center">
-      <img
-        style="width: 20px; height: 20px"
-        v-show="judger.value === 1"
-        src="../assets/img/right.png"
-      />
-      <img
-        style="width: 20px; height: 20px"
-        v-show="judger.value === 2"
-        src="../assets/img/wrong.png"
-      />
-      &nbsp;&nbsp;&nbsp;&nbsp;
-      <div v-show="judger.value === 1">Your are right, good job!</div>
-      <div v-show="judger.value === 2">
-        the answer should be {{ ComputerResult }}
+    </section>
+
+    <!-- 按钮 -->
+    <section class="ctrl-bar">
+      <button class="btn" @click="judgeAnswer(inputValue)">提交</button>
+      <button class="btn" @click="nextQuestion">下一题</button>
+    </section>
+
+    <!-- 反馈 -->
+    <transition name="fade">
+      <div v-if="judger.value" class="feedback">
+        <img v-if="judger.value === 1" src="../assets/img/right.png" />
+        <img v-else src="../assets/img/wrong.png" />
+        <span v-if="judger.value === 1">答对了！</span>
+        <span v-else
+          >正确答案：{{ ComputerResult.toFixed(2).replace(/\.?0+$/, "") }}</span
+        >
       </div>
-    </div>
+    </transition>
   </div>
-  <!-- 乘除法的题目与对错判断 -->
 </template>
 
 <style scoped>
-.context {
-  display: block;
-  justify-content: space-around;
+/* ------ CSS 变量，改这里就能换主题 ------ */
+:root {
+  /* 连续变化字号：最小值, 首选值, 最大值 */
+  --fs-score: clamp(0.9rem, 1.2vw, 1.1rem);
+  --fs-formula: clamp(1.5rem, 4vw, 2.2rem);
+  --fs-input: clamp(1.2rem, 3vw, 1.8rem);
+  --fs-btn: clamp(0.8rem, 2vw, 1rem);
+
+  /* 卡片宽度：手机几乎满屏，桌面最大 480px */
+  --card-w: min(92vw, 480px);
+  /* 按钮高度：手机 32px → 电脑 40px */
+  --btn-h: clamp(28px, 6vw, 36px);
+
+  /* 圆角 & 阴影 也随屏宽变化 */
+  --radius: clamp(4px, 1vw, 8px);
+  --shadow: 0 2px clamp(4px, 1vw, 12px) rgba(0, 0, 0, 0.08);
+
+  /* 颜色保持刚才的“普通风” */
+  --bg: #f3f5f7;
+  --card: #ffffff;
+  --text: #333333;
+  --text-light: #666666;
+  --border: #e0e0e0;
 }
-.box-line {
+
+/* 整体卡片 */
+.game-wrap {
+  width: var(--card-w);
+  margin: 2rem auto;
+  background: var(--bg);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--text);
+  text-align: center;
+  padding: clamp(1rem, 3vw, 2rem);
+  border-radius: var(--radius);
+}
+
+/* 1. 分数栏 */
+.score {
   display: flex;
-  align-items: center;
-  justify-content: space-around;
-  margin: 10%;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: var(--fs-score);
+  margin-bottom: clamp(1rem, 3vw, 2rem);
 }
-.box-container {
+.score img {
+  width: clamp(16px, 2vw, 40px);
+  height: clamp(16px, 2vw, 40px);
+}
+
+/* 2. 题目卡片 */
+.question-box {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+.formula {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 32px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+.formula .num {
+  min-width: 60px;
+}
+.formula .op {
+  color: var(--primary);
+}
+.formula .eq {
+  margin: 0 4px;
+}
+
+/* 输入框 */
+.answer-input {
+  width: 120px;
+  height: 48px;
+  font-size: 28px;
+  text-align: center;
+  border: 2px solid #dcdfe6;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.answer-input:focus {
+  border-color: var(--primary);
+}
+
+/* 3. 按钮栏 */
+.ctrl-bar {
   display: flex;
-  align-items: center;
-  justify-content: space-around;
-  margin: 10%;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
 }
-.box {
-  /* background-color: #beefc2; */
-  box-sizing: border-box;
-  height: 50px;
-  border: 1px solid #13181b;
-  padding: 10%;
+.btn {
+  height: var(--btn-h);
+  line-height: var(--btn-h);
+  padding: 10px 24px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #000;
+  background: #fff;
+  color: #000;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn:hover {
+  background: #fff8f0;
+  border-color: #000;
+}
+
+/* 4. 反馈 */
+.feedback {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  gap: 8px;
+  font-size: 16px;
+  min-height: 24px;
+}
+.feedback img {
+  width: 24px;
+  height: 24px;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.modal {
+  display: flex;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #fefefe;
+  padding: 20px;
+  border: 1px solid #888;
+  border-radius: 5px;
+  width: auto;
+  text-align: center;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
 </style>
