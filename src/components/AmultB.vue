@@ -34,10 +34,10 @@ function generateNewQuestion() {
     /* 加减法：完全原逻辑 */
     first.value = getRandomInt(1, max);
     second.value = getRandomInt(1, max);
-    operator.value = Math.random() < 0.5 ? "*" : "/";
+    operator.value = Math.random() < 0.5 ? "×" : "÷";
   } else {
     /* 乘除法：先随机运算符，再保证除法能整除 */
-    const opPool = ["*", "/"];
+    const opPool = ["×", "÷"];
     operator.value = opPool[Math.floor(Math.random() * 2)];
 
     if (operator.value === "*") {
@@ -60,10 +60,8 @@ function generateNewQuestion() {
 function judgeAnswer(raw) {
   const ans = Number(raw);
   const res =
-    operator.value === "*"
+    operator.value === "×"
       ? first.value * second.value
-      : operator.value === "/"
-      ? first.value / second.value
       : first.value / second.value; // 除法已保证整除
 
   ComputerResult.value = res;
@@ -75,8 +73,8 @@ function judgeAnswer(raw) {
     new Audio(rightMp3).play();
     if (score.value === 5 || score.value === 10 || score.value === 15) {
       CongratulationsMessageAlert();
-      setTimeout(nextQuestion, 1000);
     }
+    setTimeout(nextQuestion, 1000);
   } else if (raw !== "") {
     judger.value = { value: 2 };
     score.value -= 1;
@@ -113,8 +111,8 @@ generateNewQuestion();
   <div class="game-wrap">
     <!-- 1. 分数 -->
     <div class="score">
-      <img class="score img" src="../assets/img/star.png" />
-      <h2>Your score is : {{ score }}</h2>
+      <!-- <img class="score img" src="../assets/img/star.png" /> -->
+      <h2>🌟 Your score is : {{ score }}</h2>
     </div>
 
     <!-- 5.弹窗：答题算式进阶弹窗提示 -->

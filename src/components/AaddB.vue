@@ -127,8 +127,8 @@ function closeModal() {
   <div class="game-wrap">
     <!-- 1. 分数 -->
     <div class="score">
-      <img class="score img" src="../assets/img/star.png" />
-      <h2>Your score is : {{ score }}</h2>
+      <!-- <img class="score img" src="../assets/img/star.png" /> -->
+      <h2>🌟 Your score is : {{ score }}</h2>
     </div>
 
     <!-- 5.弹窗：答题算式进阶弹窗提示 -->
