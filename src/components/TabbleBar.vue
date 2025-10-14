@@ -1,4 +1,5 @@
 <script setup>
+import Home from "./Home.vue";
 import AaddB from "./AaddB.vue";
 import AmultB from "./AmultB.vue";
 
@@ -11,13 +12,7 @@ function selectModule(type) {
 </script>
 <template>
   <div class="nav">
-    <li class="father">
-      Home
-      <ul class="son">
-        <li>Home1</li>
-        <li>Home2</li>
-      </ul>
-    </li>
+    <li class="father" @click="selectModule('Home')">Home</li>
     &nbsp;&nbsp;&nbsp;&nbsp;
     <li class="father">
       function

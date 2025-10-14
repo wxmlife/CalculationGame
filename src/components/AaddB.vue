@@ -1,5 +1,7 @@
 <script setup>
 import { ref } from "vue";
+import rightMp3 from "../assets/right.mp3?url";
+import wrongMp3 from "../assets/wrong.mp3?url";
 
 // 第一次正式渲染
 // 二位数加减法的题目：算式里的各个元素
@@ -29,14 +31,14 @@ if (randomNumber === 0) {
 
 //封装生成二位数加减法新题目的函数
 function generateNewQuestion() {
-  if (score.value < 1) {
+  if (score.value < 5) {
     first.value = getRandomInt(1, 100);
     second.value = getRandomInt(1, 100);
     operator.value = Math.random() < 0.5 ? "+" : "-";
     formula.value = [first.value, operator.value, second.value, "="];
   }
   // 第二等级：算法进阶，从二位进阶到三位
-  if (score.value >= 1) {
+  if (score.value >= 5) {
     first.value = getRandomInt(100, 999);
     second.value = getRandomInt(100, 999);
     operator.value = Math.random() < 0.5 ? "+" : "-";
@@ -45,7 +47,7 @@ function generateNewQuestion() {
     judger.value = 0;
   }
   // 第三等级：四位数算法
-  if (score.value >= 2) {
+  if (score.value >= 10) {
     first.value = getRandomInt(1000, 9999);
     second.value = getRandomInt(1000, 9999);
     operator.value = Math.random() < 0.5 ? "+" : "-";
@@ -56,26 +58,6 @@ function generateNewQuestion() {
   inputValue = "";
   // 重置评判结果
   judger.value = 0;
-}
-
-// 进阶祝贺消息函数
-function CongratulationsMessageAlert() {
-  if (score.value == 1) {
-    showCongratulations.value = { value: true }; // 显示祝贺弹窗
-    CongratulationsMessage.value = "恭喜你掌握两位数的加减法";
-
-    setTimeout(() => {
-      showCongratulations.value = { value: false }; // 关闭弹窗
-    }, 10000);
-  }
-  if (score.value == 2) {
-    showCongratulations.value = { value: true }; // 显示祝贺弹窗
-    CongratulationsMessage.value = "恭喜你掌握三位数的加减法";
-
-    setTimeout(() => {
-      showCongratulations.value = { value: false }; // 关闭弹窗
-    }, 2000);
-  }
 }
 
 // 答案判断+进阶判断
@@ -89,18 +71,40 @@ function judgeAnswer(input) {
     judger.value = { value: 1 };
     score.value += 1;
     // Play right audio
-    new Audio("../src/assets/right.mp3").play();
+    new Audio(rightMp3).play();
     // 进阶祝贺判断
-    CongratulationsMessageAlert();
-    // 1秒后跳转到下一题
-    setTimeout(nextQuestion, 1000);
+    if (score.value == 5 || 10) {
+      CongratulationsMessageAlert();
+      // 1秒后跳转到下一题
+      setTimeout(nextQuestion, 1000);
+    }
   } else if (input !== "") {
     judger.value = { value: 2 };
     score.value -= 1;
     // Play wrong audio
-    new Audio("../src/assets/wrong.mp3").play();
+    new Audio(wrongMp3).play();
   } else {
     judger.value = { value: 0 };
+  }
+}
+
+// 进阶祝贺消息函数
+function CongratulationsMessageAlert() {
+  if (score.value == 5) {
+    showCongratulations.value = { value: true }; // 显示祝贺弹窗
+    CongratulationsMessage.value = "恭喜你掌握两位数的加减法";
+
+    setTimeout(() => {
+      showCongratulations.value = { value: false }; // 关闭弹窗
+    }, 10000);
+  }
+  if (score.value == 10) {
+    showCongratulations.value = { value: true }; // 显示祝贺弹窗
+    CongratulationsMessage.value = "恭喜你掌握三位数的加减法";
+
+    setTimeout(() => {
+      showCongratulations.value = { value: false }; // 关闭弹窗
+    }, 2000);
   }
 }
 
