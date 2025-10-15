@@ -22,7 +22,12 @@ function loadModule(type) {
 
 <template>
   <TabbleBar @module-selected="loadModule" />
-  <component :is="currentModule" />
+  <component
+    :is="currentModule"
+    @start-game="loadModule"
+    @module-selected="loadModule"
+  />
+  <!-- <component :is="currentModule" /> -->
 </template>
 
 <style scoped></style>

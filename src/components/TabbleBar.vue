@@ -73,7 +73,8 @@ onUnmounted(() => document.removeEventListener("click", clickOutside));
   top: 0;
   left: 0;
   width: 100%;
-  background: #fff8f0;
+  background: rgb(26, 26, 26);
+  color: #fff;
   z-index: 10;
   user-select: none;
 }
@@ -103,7 +104,7 @@ onUnmounted(() => document.removeEventListener("click", clickOutside));
   margin-top: -2px; /* 向上贴 2px 彻底消除可见缝隙 */
   text-align: left;
   min-width: 100%;
-  background: #faf5ee;
+  background: #000;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   border-radius: 4px;
   overflow: hidden;

@@ -275,7 +275,8 @@ generateNewQuestion();
   transition: background 0.2s;
 }
 .btn:hover {
-  background: #fff8f0;
+  background: #000;
+  color: #fff;
   border-color: #000;
 }
 
